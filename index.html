@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Батыр Баян - Интерактивті Студия</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Russo+One&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --dark-bg: #1a1a2e; /* Slightly lighter than pure black */
+            --panel-bg: rgba(30, 30, 50, 0.95);
+            --gold: #FFD700;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #e0e0e0;
+            font-family: 'Roboto Condensed', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .tab-btn, .studio-header {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* Hologram Effects */
+        .hologram-box {
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3), inset 0 0 20px rgba(0, 243, 255, 0.1);
+            background: var(--panel-bg);
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+
+        .hologram-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(0,243,255,0) 0%, rgba(0,243,255,0.05) 50%, rgba(0,243,255,0) 100%);
+            background-size: 100% 4px;
+            animation: scanline 6s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .hologram-text {
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .neon-accent {
+            color: var(--neon-purple);
+            text-shadow: 0 0 5px var(--neon-purple);
+        }
+
+        /* Tabs */
+        .tab-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #888;
+            transition: all 0.3s ease;
+            clip-path: polygon(10% 0, 100% 0, 100% 80%, 90% 100%, 0 100%, 0 20%);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        /* Inputs & Textareas */
+        input, textarea, .editable-cell {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #555;
+            color: #fff;
+            font-family: 'Roboto Condensed', sans-serif;
+        }
+        input:focus, textarea:focus, .editable-cell:focus {
+            border-color: var(--neon-purple);
+            outline: none;
+            box-shadow: 0 0 8px rgba(188, 19, 254, 0.5);
+        }
+
+        /* Table */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--neon-blue);
+        }
+
+        /* Ticker */
+        .ticker-wrap {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #16213e; /* Dark Blue instead of Black */
+            border-top: 2px solid var(--neon-purple);
+            height: 40px;
+            overflow: hidden;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+        }
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 100%;
+            animation: ticker 35s linear infinite;
+            color: var(--gold); /* Gold color */
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1em;
+            text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
+        }
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Quiz Styles */
+        .question-card {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .question-card.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .correct-answer { border: 2px solid #00ff00 !important; background: rgba(0, 255, 0, 0.1) !important; }
+        .incorrect-answer { border: 2px solid #ff0000 !important; background: rgba(255, 0, 0, 0.1) !important; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
+
+        /* Order List */
+        .order-item {
+            cursor: grab;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 5px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-item:active {
+            cursor: grabbing;
+        }
+        .order-btn {
+            background: var(--neon-blue);
+            color: #000;
+            padding: 2px 8px;
+            margin-left: 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-16">
+
+    <!-- Header -->
+    <header class="p-4 border-b border-gray-700 bg-[#16213e] flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-4">
+            <div class="w-4 h-4 rounded-full bg-red-600 animate-pulse shadow-[0_0_10px_red]"></div>
+            <h1 class="text-2xl md:text-3xl text-white tracking-widest studio-header">
+                <span class="hologram-text">M.ЖҰМАБАЕВ</span> <span class="text-gray-500 mx-2">|</span> <span class="neon-accent">БАТЫР БАЯН</span>
+            </h1>
+        </div>
+        <div class="text-xs md:text-sm text-gray-400 font-mono">
+            ЭФИР: ТІКЕЛЕЙ <br>
+            <span id="clock">00:00:00</span>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="flex justify-center gap-4 p-6 container mx-auto">
+        <button onclick="playClick(); switchTab('ted')" onmouseenter="playHover()" id="btn-ted" class="tab-btn active px-6 py-3 text-lg font-bold w-1/3">
+            TED АЛАҢЫ
+        </button>
+        <button onclick="playClick(); switchTab('concept')" onmouseenter="playHover()" id="btn-concept" class="tab-btn px-6 py-3 text-lg font-bold w-1/3">
+            КОНЦЕПТУАЛДЫҚ КЕСТЕ
+        </button>
+        <button onclick="playClick(); switchTab('test')" onmouseenter="playHover()" id="btn-test" class="tab-btn px-6 py-3 text-lg font-bold w-1/3">
+            ПОЭМА МАЗМҰНЫ БОЙЫНША ТЕСТ
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 flex-grow relative z-10">
+        
+        <!-- TAB 1: TED Talks -->
+        <div id="tab-ted" class="section-content">
+            <div class="hologram-box p-8 rounded-lg mb-8 text-center">
+                <h2 class="text-3xl mb-4 hologram-text">TED TALKS: АШЫҚ МІНБЕ</h2>
+                <p class="text-gray-300 mb-6">Бұл бөлімде әр оқушы өз ойын еркін жеткізуі тиіс. «Микрофонды» алып, сұраққа жауап беріңіз.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Question 1 -->
+                    <div class="bg-[#1e1e32] border border-gray-600 p-6 rounded hover:border-cyan-400 transition duration-300 group" onmouseenter="playHover()">
+                        <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:text-cyan-400">🎤</div>
+                        <h3 class="text-xl font-bold mb-3 text-white">Махаббат пен Отан</h3>
+                        <p class="text-gray-400">«Ноянның жау қызына ғашық болып, елінен безуін сатқындық деп бағалайсыз ба, әлде махаббат құрбаны деп ақтайсыз ба? Неге?»</p>
+                    </div>
+                    <!-- Question 2 -->
+                    <div class="bg-[#1e1e32] border border-gray-600 p-6 rounded hover:border-purple-500 transition duration-300 group" onmouseenter="playHover()">
+                        <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:text-purple-500">🎤</div>
+                        <h3 class="text-xl font-bold mb-3 text-white">Баянның шешімі</h3>
+                        <p class="text-gray-400">«Баянның өз інісін атып өлтіруі – ерлік пе, әлде қатыгездік пе? Басқа жол бар ма еді?»</p>
+                    </div>
+                    <!-- Question 3 -->
+                    <div class="bg-[#1e1e32] border border-gray-600 p-6 rounded hover:border-cyan-400 transition duration-300 group" onmouseenter="playHover()">
+                        <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:text-cyan-400">🎤</div>
+                        <h3 class="text-xl font-bold mb-3 text-white">Тағдыр және Таңдау</h3>
+                        <p class="text-gray-400">«Ақын "Түйіннің тоқсан түрлі шешуі бар" дейді. Осы оқиғада кейіпкерлер тағдырдың жазғанына көнді ме, әлде өз таңдауларын жасады ма?»</p>
+                    </div>
+                    <!-- Question 4 -->
+                    <div class="bg-[#1e1e32] border border-gray-600 p-6 rounded hover:border-purple-500 transition duration-300 group" onmouseenter="playHover()">
+                        <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:text-purple-500">🎤</div>
+                        <h3 class="text-xl font-bold mb-3 text-white">Абылай бейнесі</h3>
+                        <p class="text-gray-400">«Поэмадағы Абылай ханның ұстамдылығы мен даналығы қазіргі көшбасшыларға үлгі бола ала ма? Дәлел келтіріңіз.»</p>
+                    </div>
+                    <!-- Question 5 -->
+                    <div class="bg-[#1e1e32] border border-gray-600 p-6 rounded hover:border-cyan-400 transition duration-300 group" onmouseenter="playHover()">
+                        <div class="text-4xl mb-4 opacity-50 group-hover:opacity-100 group-hover:text-cyan-400">🎤</div>
+                        <h3 class="text-xl font-bold mb-3 text-white">Қазіргі заман</h3>
+                        <p class="text-gray-400">«"Ерлерді ұмытса да ел, жер ұмытпас" деген түйін бүгінгі жастар үшін қаншалықты өзекті? Біз батырларды қалай ұлықтап жүрміз?»</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Conceptual Table -->
+        <div id="tab-concept" class="section-content hidden">
+            <div class="hologram-box p-6 rounded-lg">
+                <h2 class="text-2xl mb-6 hologram-text border-b border-gray-700 pb-2">АНАЛИТИКАЛЫҚ ДЕРЕКТЕР БАЗАСЫ</h2>
+                <p class="mb-4 text-sm text-gray-400">Төмендегі кестені толтырыңыз. Торкөздерді басып, өз жауабыңызды жазыңыз.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="w-1/6">Кейіпкер / Образ</th>
+                                <th class="w-1/4">Мінездеме / Іс-әрекеті</th>
+                                <th class="w-1/4">Қолданылған көркемдегіш құралдар (теңеу, эпитет)</th>
+                                <th class="w-1/3">Менің бағам (Ой-пікір)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-bold text-cyan-400">Батыр Баян</td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-cyan-400">Ноян</td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-cyan-400">Қалмақ қызы</td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-cyan-400">Абылай Хан</td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-cyan-400">Сарыарқа (Табиғат)</td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                                <td contenteditable="true" class="editable-cell"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-right">
+                    <button class="bg-gray-800 border border-cyan-400 text-cyan-400 px-4 py-2 hover:bg-cyan-900 transition" onclick="playClick(); alert('Деректер жадыда сақталды!')">САҚТАУ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Test -->
+        <div id="tab-test" class="section-content hidden">
+            <div class="hologram-box p-6 rounded-lg min-h-[600px]">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+                    <h2 class="text-2xl neon-accent">ПОЭМА МАЗМҰНЫ БОЙЫНША ТЕСТ: 35 СҰРАҚ</h2>
+                    <div class="text-xl">
+                        Сұрақ: <span id="current-question-num" class="text-cyan-400">1</span> / 35
+                    </div>
+                </div>
+
+                <div id="quiz-container">
+                    <!-- Questions will be injected here via JS -->
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8">
+                    <button id="prev-btn" class="bg-gray-800 px-6 py-2 rounded text-gray-400 hover:text-white disabled:opacity-50" onclick="playClick(); changeQuestion(-1)" disabled onmouseenter="playHover()">АРТҚА</button>
+                    <button id="next-btn" class="bg-cyan-700 px-6 py-2 rounded text-white hover:bg-cyan-600" onclick="playClick(); changeQuestion(1)" onmouseenter="playHover()">КЕЛЕСІ</button>
+                    <button id="finish-btn" class="bg-purple-700 px-6 py-2 rounded text-white hover:bg-purple-600 hidden" onclick="playClick(); finishQuiz()" onmouseenter="playHover()">АЯҚТАУ</button>
+                </div>
+            </div>
+
+            <!-- Result Modal -->
+            <div id="result-modal" class="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center hidden z-50">
+                <div class="bg-[#1e1e32] border-2 border-neon-purple p-8 rounded-lg max-w-2xl w-full text-center relative">
+                    <h2 class="text-4xl font-bold mb-4 text-white">ТЕСТ НӘТИЖЕСІ</h2>
+                    <div class="text-6xl font-bold mb-6 text-cyan-400" id="score-display">0%</div>
+                    <p class="text-xl mb-4" id="score-text"></p>
+                    <div id="wrong-answers-list" class="text-left max-h-60 overflow-y-auto bg-gray-800 p-4 rounded mb-6 text-sm">
+                        <!-- Wrong answers listed here -->
+                    </div>
+                    <button class="bg-cyan-600 px-8 py-3 rounded text-white font-bold hover:bg-cyan-500" onclick="playClick(); location.reload()" onmouseenter="playHover()">ҚАЙТА ТАПСЫРУ</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Ticker -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+            +++ «ЕРЛЕРДІ ҰМЫТСА ДА ЕЛ, ЖЕР ҰМЫТПАС...» +++ «ТҮЙІННІҢ ТОҚСАН ТҮРЛІ ШЕШУІ БАР» +++ «АҚЫНДА АДАМЗАТТАН ДОС БОЛМАЙДЫ» +++ «АЛАШТЫҢ АРУАҒЫ» +++ «ҚЫЗЫЛ ТІЛ, ҚОЛЫМ ЕМЕС, КІСЕНДЕУЛІ» +++ «БАЯННЫҢ БАТЫРЛЫҒЫ АЛАШҚА АЯН» +++
+        </div>
+    </div>
+
+    <script>
+        // --- Sound Effects Engine ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playHover() {
+            // High pitched short blip
+            playTone(800, 'sine', 0.05, 0.05);
+        }
+
+        function playClick() {
+            // Mechanical click sound
+            playTone(400, 'square', 0.1, 0.05);
+            setTimeout(() => playTone(600, 'square', 0.05, 0.05), 50);
+        }
+
+        function playSuccess() {
+            // Success chime
+            playTone(600, 'sine', 0.1);
+            setTimeout(() => playTone(800, 'sine', 0.1), 100);
+            setTimeout(() => playTone(1200, 'sine', 0.3), 200);
+        }
+
+        // --- Clock Script ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('kk-KZ');
+        }, 1000);
+
+        // --- Tab Switching ---
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
+            // Remove active class from buttons
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            // Show selected
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
+        // --- Quiz Data (35 Complex Questions) ---
+        const quizData = [
+            // 1-5: Matching (Сәйкестендіру)
+            { type: 'match', q: 'Кейіпкерлер мен олардың сипаттамаларын сәйкестендіріңіз:', 
+              pairs: [
+                  {a: 'Абылай', b: 'Тағдырын ел тапсырған дана'},
+                  {a: 'Баян', b: 'Жауды талай көрген, наркескен'},
+                  {a: 'Ноян', b: 'Бөкеннің жас жолбарыс жеткіншегі'},
+                  {a: 'Қанай', b: 'Қарауылдың шешен биі'}
+              ] 
+            },
+            { type: 'match', q: 'Теңеулер мен нысандарды сәйкестендіріңіз:', 
+              pairs: [
+                  {a: 'Сарыарқа', b: 'Сары дария'},
+                  {a: 'Көкшетау', b: 'Сарыарқаның аралы'},
+                  {a: 'Оқжетпес', b: 'Найза қия — қыранға ұя'},
+                  {a: 'Бурабай', b: 'Жер еркесі'}
+              ] 
+            },
+            { type: 'match', q: 'Батырлар мен олардың руларын/анықтамасын сәйкестендір:', 
+              pairs: [
+                  {a: 'Бөгенбай', b: 'Қарт қыран Қанжығалы'},
+                  {a: 'Сарымалай', b: 'Жас барыс бәсентиін'},
+                  {a: 'Жәнібек', b: 'Тәкаппар Қошқар ұлы'},
+                  {a: 'Сырымбет', b: 'Сырттаны Бәсентиін'}
+              ] 
+            },
+            { type: 'match', q: 'Сөйлемдерді кім айтқан?', 
+              pairs: [
+                  {a: '«Қанайым, ойың удай, тілің шаян»', b: 'Абылай хан'},
+                  {a: '«Жүрелік, жау басынар!»', b: 'Батырлар'},
+                  {a: '«Жарайды... Бар, ақсақал. Ойланармыз»', b: 'Батыр Баян'},
+                  {a: '«Мен сенің сүйгеніңе сенем»', b: 'Қалмақ қызы'}
+              ] 
+            },
+            { type: 'match', q: 'Поэмадағы жер-су атаулары мен сипаты:', 
+              pairs: [
+                  {a: 'Жолдыөзек', b: 'Құтсыз, отсыз, қанды өзек'},
+                  {a: 'Обаған', b: 'Уақ қоныс қылған өзен'},
+                  {a: 'Балқаш', b: 'Бетін мәңгі меруерт жапқан'},
+                  {a: 'Іле', b: 'Екі көзі - Қаратал, Аягөз'}
+              ] 
+            },
+
+            // 6-10: Ordering (Позицияны ауыстыру)
+            { type: 'order', q: 'Оқиғаларды хронологиялық ретпен орналастырыңыз:', 
+              items: ['Абылайдың «Аттан!» деп жарлық беруі', 'Ноян мен қалмақ қызының қашуы', 'Баянның Жолдыөзекте інісін атуы', 'Абылай мен Баянның кеңесуі', 'Іле бойындағы қалмақтармен соғыс'] },
+            { type: 'order', q: 'Поэманың композициялық құрылымын реттеңіз:', 
+              items: ['Ақынның кіріспе толғауы (Сарыарқа, Көкше)', 'Батырлардың кеңесуі, Баянның жоқтығы', 'Ноянның сатқындығы жайлы хабар', 'Баянның өкініші мен монологы', 'Баянның қаза табуы'] },
+            { type: 'order', q: 'Ноян мен қыздың қашу процесін реттеңіз:', 
+              items: ['Қыздың Ноянға сырын ашуы', 'Сайдағы кездесу', 'Қыздың Баян туралы қорқынышын айтуы', 'Уәде байласу', 'Жылқыдан екі жүйрік таңдап алу'] },
+            { type: 'order', q: 'Баянның ішкі күйінің өзгеру реті:', 
+              items: ['Хабарды естіп сұп-сұр болу', 'Ақылдың өлуі, ашудың билеуі', 'Садақты тарту сәті', 'Есі ауғандай құлап түсу', '«Не істедім?» деген өкініш'] },
+            { type: 'order', q: 'Екінші тараудағы оқиғалар тізбегі:', 
+              items: ['Қолдың Балқашқа жетуі', 'Қалмақ елшілерінің келуі', 'Баянның келісімге қарсы шығуы', '«Шаңды жол» жорығы', 'Қалмақтардың Қытайға ауып кетуі'] },
+
+            // 11-15: Multiple Correct Answers (Бірнеше дұрыс жауап)
+            { type: 'multi', q: 'Баянның образын ашатын қасиеттерді белгілеңіз:', 
+              options: ['Ел намысын бәрінен жоғары қою', 'Сезімге берілгіш, қызба', 'Қулық пен айлакерлік', 'Бауырмалдықтан гөрі парызға адалдық', 'Діни фанатизм'], correct: [0, 1, 3] },
+            { type: 'multi', q: 'Поэмада кездесетін тарихи тұлғаларды табыңыз:', 
+              options: ['Абылай хан', 'Кенесары', 'Бұқар жырау', 'Тәттіқара жырау', 'Махамбет'], correct: [0, 2, 3] },
+            { type: 'multi', q: 'Қалмақ қызының сипаттамасына сәйкес келетін тіркестер:', 
+              options: ['Он төрт жастағы балдырған', 'Көзі қыли, жасы үлкен', 'Тісі меруерт, сөзі судай', 'Ақылсыз, аңғал', 'Өз елін сүйген патриот'], correct: [0, 2, 4] },
+            { type: 'multi', q: 'Ақын Көкшетау табиғатын суреттеуде қандай аңдарды атайды?', 
+              options: ['Бөрі', 'Марал', 'Піл', 'Бұғы', 'Арыстан'], correct: [0, 1, 3] },
+            { type: 'multi', q: 'Баянның Ноян мен қызды өлтіргеннен кейінгі іс-әрекеттері:', 
+              options: ['Оларды тастап кетіп қалды', 'Жапан далада үңгір қазды', 'Қаруларын қосып көмді', 'Елге мақтанып айтты', 'Бір топырақ ортасына түсірмей екеуін бірге жерледі'], correct: [1, 2, 4] },
+
+            // 16-25: True/False (Ақиқат/Жалған)
+            { type: 'bool', q: 'Поэмада Батыр Баян қалмақ қызына өзі ғашық болған.', correct: true },
+            { type: 'bool', q: 'Ноян Баянның туған ұлы еді.', correct: false }, // Інісі
+            { type: 'bool', q: 'Абылай хан қалмақтармен бітімге келуді бірден қолдады.', correct: true }, // Басында қолдады
+            { type: 'bool', q: 'Баян Ноянды атқанда көзін жұмып атты.', correct: true },
+            { type: 'bool', q: 'Оқиға «Ақтабан шұбырынды» заманында өтіп жатыр.', correct: true },
+            { type: 'bool', q: 'Қалмақ қызы Ноянды сүйгендіктен емес, тек еліне қашу үшін пайдаланды.', correct: true },
+            { type: 'bool', q: 'Жолдыөзек - өте құнарлы, шөбі шүйгін жер.', correct: false },
+            { type: 'bool', q: 'Баян соғыста емес, қарттықтан қайтыс болды.', correct: false },
+            { type: 'bool', q: 'Поэмада «Алаш» сөзі жиі қайталанады.', correct: true },
+            { type: 'bool', q: 'Баянның руы - Уақ.', correct: true },
+
+            // 26-35: Multiple Choice (Көп таңдаулы)
+            { type: 'single', q: 'Поэманың бірінші тарауындағы лирикалық шегініс не туралы?', options: ['Махаббат жайлы', 'Ақын мен өмір, тағдыр жайлы', 'Соғыс өнері жайлы', 'Бала тәрбиесі жайлы'], correct: 1 },
+            { type: 'single', q: '«Жай тақтақ жабайыдан жол қалғанда, Қанды ор боп ақын жолы қалады да» деген жолдардың мағынасы:', options: ['Ақын болу оңай', 'Ақынның тағдыры ауыр, азапты', 'Ақындар соғысқа қатыспауы керек', 'Ақындар бай болады'], correct: 1 },
+            { type: 'single', q: 'Баян Ноян мен қызды қай жерде қуып жетті?', options: ['Іле бойында', 'Бурабайда', 'Жолдыөзекте', 'Балқашта'], correct: 2 },
+            { type: 'single', q: 'Ноянның жасы нешеде еді?', options: ['Жиырмада', 'Он бесте', 'Он сегізде', 'Он үште'], correct: 1 },
+            { type: 'single', q: '«Түйіннің тоқсан түрлі шешуі бар» деген сөз қай кезде айтылады?', options: ['Поэманың басында', 'Баян өлгенде', 'Ноян қашқанда', 'Абылай сөйлегенде'], correct: 0 },
+            { type: 'single', q: 'Баян қыз бен Ноянды өлтірген соң кімге серт береді?', options: ['Абылайға', 'Алашқа, жауға шабуға', 'Анасына', 'Құдайға'], correct: 1 },
+            { type: 'single', q: 'Батыр Баянның соңғы сөзі немесе әрекеті қандай болды?', options: ['Ноянның атын атады', 'Жанатайды құшақтап құлады', 'Абылайды қарғады', 'Қызды сұрады'], correct: 1 },
+            { type: 'single', q: 'Қалмақ қызы Ноянды қашуға қалай көндірді?', options: ['Байлық уәде етті', 'Анасының антын айтып, жылап көндірді', 'Қорқытты', 'Баян сені өлтіреді деп алдады'], correct: 1 },
+            { type: 'single', q: '«Қу өмір қызығы жоқ қажытқан соң...» Бұл кімнің көңіл-күйі?', options: ['Ноянның', 'Автордың (Мағжанның)', 'Абылайдың', 'Қалмақ қызының'], correct: 1 },
+            { type: 'single', q: '«Ерлерді ұмытса да ел, сел ұмытпас...» деген жолдардағы идея:', options: ['Табиғат пен ерлік үндестігі, тарихтың мәңгілігі', 'Судың қауіптілігі', 'Елдің ұмытшақтығы', 'Баянның өкпесі'], correct: 0 }
+        ];
+
+        let currentQIndex = 0;
+        let userAnswers = {};
+        const quizContainer = document.getElementById('quiz-container');
+
+        // --- Render Functions ---
+
+        function renderQuestion() {
+            quizContainer.innerHTML = '';
+            const q = quizData[currentQIndex];
+            document.getElementById('current-question-num').innerText = currentQIndex + 1;
+
+            const card = document.createElement('div');
+            card.className = 'question-card active';
+            
+            let html = `<h3 class="text-xl md:text-2xl font-bold mb-6 text-white">${q.q}</h3>`;
+
+            if (q.type === 'single') {
+                html += `<div class="space-y-3">`;
+                q.options.forEach((opt, idx) => {
+                    const checked = userAnswers[currentQIndex] === idx ? 'checked' : '';
+                    html += `
+                        <label onclick="playClick()" class="block bg-[#2a2a40] p-4 rounded hover:bg-[#32324a] cursor-pointer border border-gray-600 transition" onmouseenter="playHover()">
+                            <input type="radio" name="q${currentQIndex}" value="${idx}" ${checked} class="mr-3 accent-cyan-400">
+                            ${opt}
+                        </label>`;
+                });
+                html += `</div>`;
+            } else if (q.type === 'bool') {
+                const checkedTrue = userAnswers[currentQIndex] === 'true' ? 'checked' : '';
+                const checkedFalse = userAnswers[currentQIndex] === 'false' ? 'checked' : '';
+                html += `
+                    <div class="flex gap-6 mt-4">
+                        <label onclick="playClick()" class="flex-1 bg-[#2a2a40] p-6 rounded text-center cursor-pointer border border-green-700 hover:bg-green-900" onmouseenter="playHover()">
+                            <input type="radio" name="q${currentQIndex}" value="true" ${checkedTrue} class="mr-2 accent-green-500"> АҚИҚАТ
+                        </label>
+                        <label onclick="playClick()" class="flex-1 bg-[#2a2a40] p-6 rounded text-center cursor-pointer border border-red-700 hover:bg-red-900" onmouseenter="playHover()">
+                            <input type="radio" name="q${currentQIndex}" value="false" ${checkedFalse} class="mr-2 accent-red-500"> ЖАЛҒАН
+                        </label>
+                    </div>`;
+            } else if (q.type === 'multi') {
+                html += `<div class="space-y-3"><p class="text-sm text-cyan-300 mb-2">* Бірнеше жауап таңдаңыз</p>`;
+                q.options.forEach((opt, idx) => {
+                    const isChecked = userAnswers[currentQIndex] && userAnswers[currentQIndex].includes(idx);
+                    html += `
+                        <label onclick="playClick()" class="block bg-[#2a2a40] p-4 rounded hover:bg-[#32324a] cursor-pointer border border-gray-600 transition" onmouseenter="playHover()">
+                            <input type="checkbox" name="q${currentQIndex}" value="${idx}" ${isChecked ? 'checked' : ''} class="mr-3 accent-purple-500">
+                            ${opt}
+                        </label>`;
+                });
+                html += `</div>`;
+            } else if (q.type === 'match') {
+                html += `<div class="grid grid-cols-2 gap-4">`;
+                // Shuffling B side for display
+                const bOptions = [...q.pairs].sort(() => Math.random() - 0.5);
+                
+                html += `<div class="space-y-4">`;
+                q.pairs.forEach((pair, idx) => {
+                    html += `<div class="bg-[#2a2a40] p-3 rounded border border-gray-600">${idx + 1}. ${pair.a}</div>`;
+                });
+                html += `</div><div class="space-y-4">`;
+                bOptions.forEach((pair, idx) => {
+                    // Create a mapping to find original pair index
+                    const originalIndex = q.pairs.findIndex(p => p.b === pair.b);
+                    html += `<div class="bg-[#2a2a40] p-3 rounded border border-gray-700 flex items-center">
+                        <span class="mr-2 text-cyan-400 font-bold">[?]</span>
+                        ${pair.b}
+                         <select onclick="playClick()" class="ml-auto bg-black border border-gray-500 text-white rounded match-select" data-pair-index="${originalIndex}">
+                            <option value="">Таңда</option>
+                            ${q.pairs.map((_, i) => `<option value="${i+1}" ${userAnswers[currentQIndex] && userAnswers[currentQIndex][originalIndex] == (i+1) ? 'selected' : ''}>${i+1}</option>`).join('')}
+                         </select>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            } else if (q.type === 'order') {
+                // Initialize order if not set
+                if (!userAnswers[currentQIndex]) {
+                    userAnswers[currentQIndex] = [...q.items].sort(() => Math.random() - 0.5);
+                }
+                const currentOrder = userAnswers[currentQIndex];
+
+                html += `<div class="space-y-2 order-container">`;
+                currentOrder.forEach((item, idx) => {
+                    html += `
+                        <div class="order-item rounded border border-gray-600" data-index="${idx}" onmouseenter="playHover()">
+                            <span>${idx + 1}. ${item}</span>
+                            <div>
+                                <button class="order-btn" onclick="playClick(); moveOrder(${idx}, -1)">▲</button>
+                                <button class="order-btn" onclick="playClick(); moveOrder(${idx}, 1)">▼</button>
+                            </div>
+                        </div>`;
+                });
+                html += `</div>`;
+            }
+
+            card.innerHTML = html;
+            quizContainer.appendChild(card);
+
+            // Save handlers
+            setupInputListeners(q.type);
+            updateNavButtons();
+        }
+
+        function setupInputListeners(type) {
+            if (type === 'single') {
+                document.querySelectorAll(`input[name="q${currentQIndex}"]`).forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        userAnswers[currentQIndex] = parseInt(e.target.value);
+                    });
+                });
+            } else if (type === 'bool') {
+                document.querySelectorAll(`input[name="q${currentQIndex}"]`).forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        userAnswers[currentQIndex] = e.target.value;
+                    });
+                });
+            } else if (type === 'multi') {
+                document.querySelectorAll(`input[name="q${currentQIndex}"]`).forEach(input => {
+                    input.addEventListener('change', () => {
+                        const checked = Array.from(document.querySelectorAll(`input[name="q${currentQIndex}"]:checked`)).map(cb => parseInt(cb.value));
+                        userAnswers[currentQIndex] = checked;
+                    });
+                });
+            } else if (type === 'match') {
+                document.querySelectorAll('.match-select').forEach(select => {
+                    select.addEventListener('change', () => {
+                        if (!userAnswers[currentQIndex]) userAnswers[currentQIndex] = {};
+                        userAnswers[currentQIndex][select.dataset.pairIndex] = select.value;
+                    });
+                });
+            }
+        }
+
+        function moveOrder(index, direction) {
+            const arr = userAnswers[currentQIndex];
+            const newIndex = index + direction;
+            if (newIndex >= 0 && newIndex < arr.length) {
+                [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
+                renderQuestion();
+            }
+        }
+
+        function changeQuestion(dir) {
+            currentQIndex += dir;
+            renderQuestion();
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prev-btn').disabled = currentQIndex === 0;
+            if (currentQIndex === quizData.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('finish-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('finish-btn').classList.add('hidden');
+            }
+        }
+
+        function finishQuiz() {
+            let score = 0;
+            let total = quizData.length;
+            let wrongHTML = '';
+
+            quizData.forEach((q, idx) => {
+                let isCorrect = false;
+                let userAnswer = userAnswers[idx];
+
+                if (q.type === 'single') {
+                    if (userAnswer === q.correct) isCorrect = true;
+                } else if (q.type === 'bool') {
+                    if ((userAnswer === 'true' && q.correct) || (userAnswer === 'false' && !q.correct)) isCorrect = true;
+                } else if (q.type === 'multi') {
+                    if (userAnswer && userAnswer.length === q.correct.length && userAnswer.every(val => q.correct.includes(val))) isCorrect = true;
+                } else if (q.type === 'match') {
+                    if (userAnswer) {
+                        const keys = Object.keys(userAnswer);
+                        if (keys.length === q.pairs.length) {
+                             let correctCount = 0;
+                             for(let k in userAnswer) {
+                                 if(parseInt(k) + 1 == parseInt(userAnswer[k])) correctCount++;
+                             }
+                             if(correctCount === q.pairs.length) isCorrect = true;
+                        }
+                    }
+                } else if (q.type === 'order') {
+                    if (JSON.stringify(userAnswer) === JSON.stringify(q.items)) isCorrect = true;
+                }
+
+                if (isCorrect) {
+                    score++;
+                } else {
+                    wrongHTML += `<div class="mb-2 border-b border-gray-700 pb-2"><span class="text-red-400 font-bold">Сұрақ ${idx+1}:</span> ${q.q}</div>`;
+                }
+            });
+
+            const percentage = Math.round((score / total) * 100);
+            document.getElementById('score-display').innerText = percentage + '%';
+            document.getElementById('score-text').innerText = `${total} сұрақтың ${score} дұрыс.`;
+            document.getElementById('wrong-answers-list').innerHTML = wrongHTML || '<div class="text-green-400">Барлығы дұрыс! Жарайсың!</div>';
+            
+            if (percentage > 50) playSuccess();
+
+            document.getElementById('result-modal').classList.remove('hidden');
+        }
+
+        // Initialize first question
+        renderQuestion();
+
+    </script>
+</body>
+</html>
